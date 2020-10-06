@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"syscall"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -39,18 +39,13 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		list, err := ioutil.ReadDir(cwd)
+		list, err := ioutil.ReadDir(".")
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		if ok, _ := cmd.Flags().GetBool("all"); !ok {
-			filterHiddenFiles(&list, cwd)
+			list = filterDotFiles(list)
 		}
 
 		for _, item := range list {
@@ -63,25 +58,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func filterHiddenFiles(list *[]os.FileInfo, cwd string) {
-	for i, v := range *list {
-		path := cwd + "\\" + v.Name()
-		pointer, err := syscall.UTF16PtrFromString(path)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		attr, err := syscall.GetFileAttributes(pointer)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		if attr&syscall.FILE_ATTRIBUTE_HIDDEN == 2 {
-			*list = append((*list)[:i], (*list)[i+1:]...)
-		}
-	}
-}
-
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -89,6 +65,17 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func filterDotFiles(list []os.FileInfo) []os.FileInfo {
+	var filteredList []os.FileInfo
+	for _, v := range list {
+		if strings.Index(v.Name(), ".") != 0 {
+			filteredList = append(filteredList, v)
+		}
+	}
+
+	return filteredList
 }
 
 func init() {
