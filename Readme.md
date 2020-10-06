@@ -12,9 +12,9 @@ While working on Unix, this might probably be the most used command and if you s
 
 1. Install Go
 2. Clone the repository and enter the folder: <br />
-   `git clone https://github.com/Tak1za/go-ls.git && cd go-ls`
-3. Make sure GOPATH is set. Check by running: `go env`.
+   ```git clone https://github.com/Tak1za/go-ls.git && cd go-ls```
+3. Make sure GOPATH is set. Check by running: ```go env```.
 4. Add GOPATH to Windows Environment Variables.
 5. Install the binary: <br />
-   `go build -o %GOPATH%/bin/ls`
-6. If all goes well, run `ls` in any directory.
+   ```go build -o %GOPATH%/bin/ls```
+6. If all goes well, run ```ls``` in any directory.
