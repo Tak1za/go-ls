@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"syscall"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -48,6 +49,10 @@ var rootCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
+		if ok, _ := cmd.Flags().GetBool("all"); !ok {
+			filterHiddenFiles(&list, cwd)
+		}
+
 		for _, item := range list {
 			if item.IsDir() {
 				color.Blue(item.Name())
@@ -56,6 +61,25 @@ var rootCmd = &cobra.Command{
 			color.White(item.Name())
 		}
 	},
+}
+
+func filterHiddenFiles(list *[]os.FileInfo, cwd string) {
+	for i, v := range *list {
+		path := cwd + "\\" + v.Name()
+		pointer, err := syscall.UTF16PtrFromString(path)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		attr, err := syscall.GetFileAttributes(pointer)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		if attr&syscall.FILE_ATTRIBUTE_HIDDEN == 2 {
+			*list = append((*list)[:i], (*list)[i+1:]...)
+		}
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -74,11 +98,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.go-ls.yaml)")
-
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("all", "a", false, "Do not ignore hidden files or directories")
 }
 
 // initConfig reads in config file and ENV variables if set.
