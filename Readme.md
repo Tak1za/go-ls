@@ -5,7 +5,7 @@ This is a simple implementation of the ever popular ***ls*** command from Unix s
 
 ## Need ?
 
-While working on Unix, this might probably be the most used command and if you switch to Windows every now and then like me there would have been countless number of times when instead of writing ***dir*** in the prompt (I don't like Powershell either), you end up writing ***ls*** (like me!). <br />
+While working on Unix, this might probably be the most used command and if you switch to Windows every now and then like me there would have been countless number of times when instead of writing ***dir*** in the prompt (I don't like Powershell either), you end up writing ***ls*** (like me!). <br /><br />
 **Why not remove the hassle?!**
 
 ## Installation
