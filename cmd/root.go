@@ -17,12 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
-	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -38,24 +34,7 @@ var rootCmd = &cobra.Command{
 	Long:  `'ls' is a command for Windows that lists down the content of a directory, styled and unstyled can be changed via flags`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {
-		list, err := ioutil.ReadDir(".")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		if ok, _ := cmd.Flags().GetBool("all"); !ok {
-			list = filterDotFiles(list)
-		}
-
-		for _, item := range list {
-			if item.IsDir() {
-				color.Blue(item.Name())
-				continue
-			}
-			color.White(item.Name())
-		}
-	},
+	Run: ls,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -67,17 +46,6 @@ func Execute() {
 	}
 }
 
-func filterDotFiles(list []os.FileInfo) []os.FileInfo {
-	var filteredList []os.FileInfo
-	for _, v := range list {
-		if strings.Index(v.Name(), ".") != 0 {
-			filteredList = append(filteredList, v)
-		}
-	}
-
-	return filteredList
-}
-
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -87,7 +55,8 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("all", "a", false, "Do not ignore hidden files or directories")
+	rootCmd.Flags().BoolP("all", "a", false, "Do not ignore content starting with .")
+	rootCmd.Flags().BoolP("author", "", false, "Print author of contents")
 }
 
 // initConfig reads in config file and ENV variables if set.
