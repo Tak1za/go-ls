@@ -57,6 +57,10 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("all", "a", false, "Do not ignore content starting with .")
 	rootCmd.Flags().BoolP("author", "", false, "Print author of contents")
+	rootCmd.Flags().BoolP("c", "c", false, `with -lt: sort by, and show, ctime 
+	(time of last modification of file status information); 
+	with -l: show ctime and sort by name; 
+	otherwise: sort by ctime, newest first`)
 }
 
 // initConfig reads in config file and ENV variables if set.
