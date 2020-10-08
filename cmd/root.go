@@ -61,6 +61,7 @@ func init() {
 	(time of last modification of file status information); 
 	with -l: show ctime and sort by name; 
 	otherwise: sort by ctime, newest first`)
+	rootCmd.Flags().BoolP("long", "l", false, "use a long listing format")
 }
 
 // initConfig reads in config file and ENV variables if set.

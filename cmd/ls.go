@@ -21,9 +21,15 @@ type data struct {
 	author string
 	isDir  bool
 	cTime  time.Time
+	perm   string
+	size   int64
 }
 
-var response []data
+var (
+	response          []data
+	PRINT_WITH_TIME   bool = false
+	PRINT_LONG_FORMAT bool = false
+)
 
 func ls(cmd *cobra.Command, args []string) {
 	list, err := ioutil.ReadDir(".")
@@ -36,6 +42,8 @@ func ls(cmd *cobra.Command, args []string) {
 		inner.name = v.Name()
 		inner.isDir = v.IsDir()
 		inner.cTime = v.ModTime()
+		inner.perm = v.Mode().Perm().String()
+		inner.size = v.Size()
 		response = append(response, inner)
 	}
 
@@ -49,9 +57,23 @@ func ls(cmd *cobra.Command, args []string) {
 
 	if ok, _ := cmd.Flags().GetBool("c"); ok {
 		response = sortByCTime(response)
+		PRINT_WITH_TIME = true
 	}
 
-	printList(response)
+	if ok, _ := cmd.Flags().GetBool("long"); ok {
+		response = addAuthor(response)
+		response = sortName(response)
+		PRINT_LONG_FORMAT = true
+	}
+
+	if PRINT_LONG_FORMAT {
+		printLongFormat(response)
+	} else if PRINT_WITH_TIME {
+		printListWithTime(response)
+	} else {
+		response = sortName(response)
+		printList(response)
+	}
 }
 
 func printList(list []data) {
@@ -61,6 +83,32 @@ func printList(list []data) {
 			color.New(color.FgBlue).FprintfFunc()(tw, "%v\t%v\n", item.name, item.author)
 		} else {
 			fmt.Fprintf(tw, "%v\t%v\n", item.name, item.author)
+		}
+	}
+	tw.Flush()
+}
+
+func printLongFormat(list []data) {
+	tw := ansiterm.NewTabWriter(os.Stdout, 0, 0, 3, ' ', 0)
+	for _, item := range list {
+		if item.isDir {
+			color.New(color.FgBlue).FprintfFunc()(
+				tw,
+				"%v\t%v\t%v\t%v\t%v\n",
+				item.perm,
+				item.author,
+				item.size,
+				item.cTime.Local().Format(time.Stamp),
+				item.name)
+		} else {
+			fmt.Fprintf(
+				tw,
+				"%v\t%v\t%v\t%v\t%v\n",
+				item.perm,
+				item.author,
+				item.size,
+				item.cTime.Local().Format(time.Stamp),
+				item.name)
 		}
 	}
 	tw.Flush()
@@ -119,6 +167,14 @@ func addAuthor(list []data) []data {
 func sortByCTime(list []data) []data {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].cTime.After(list[j].cTime)
+	})
+
+	return list
+}
+
+func sortName(list []data) []data {
+	sort.Slice(list, func(i, j int) bool {
+		return strings.ToLower(list[i].name) < strings.ToLower(list[j].name)
 	})
 
 	return list
